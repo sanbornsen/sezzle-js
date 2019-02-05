@@ -1,0 +1,30 @@
+{
+    "targetXPath": ["#id-1/.class-1", "#id-2/.class-2"],
+    "renderToPath": ["..", ".."],
+    "merchantID": "49261e2d-72af-4358-bf97-3035ce9f11a1",
+    "minPrice": 0,
+    "maxPrice": 2000000,
+    "theme": "light",
+    "widthType": "thin",
+    "widgetType": "product-page",
+    "alignment": "left",
+    "forcedShow": false,
+    "hidePrice": false,
+    "customClasses": [{
+        "xpath": ".",
+        "className": "class-1-0",
+        "index": 0
+    }, {
+        "xpath": "./div",
+        "className": "class-2-0",
+        "index": 0
+    }, {
+        "xpath": ".",
+        "className": "class-1-1",
+        "index": 1
+    },{
+        "xpath": "./div",
+        "className": "class-2-1",
+        "index": 1
+    }]
+}
