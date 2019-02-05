@@ -778,9 +778,7 @@ SezzleJS.prototype.mutationCallBack = function (mutations) {
     .filter(function (mutation) { return mutation.type === 'childList' })
     .forEach(function (mutation) {
       var priceIndex = mutation.target.dataset.sezzleindex;
-      var s = new SezzleJS(document.sezzleConfig);
-      var price = s.getFormattedPrice(mutation.target);
-      delete s;
+      var price = this.getFormattedPrice(mutation.target);
       var sezzlePriceElement = document.getElementsByClassName('sezzleindex-' + priceIndex)[0];
       if (!/\d/.test(price)) {
         sezzlePriceElement.parentElement.parentElement.parentElement.classList.add('sezzle-hidden');
@@ -788,7 +786,7 @@ SezzleJS.prototype.mutationCallBack = function (mutations) {
         sezzlePriceElement.parentElement.parentElement.parentElement.classList.remove('sezzle-hidden');
       }
       sezzlePriceElement.innerText = price;
-    });
+    }.bind(this));
 };
 
 /**
@@ -801,7 +799,7 @@ SezzleJS.prototype.startObserve = function (element) {
   // TODO : Need a way to unsubscribe to prevent memory leak
   // Deleted elements should not be observed
   // That is handled
-  var observer = new MutationObserver(this.mutationCallBack);
+  var observer = new MutationObserver(this.mutationCallBack.bind(this));
   observer.observe(element, this._config);
   return observer;
 }
@@ -1196,5 +1194,3 @@ SezzleJS.prototype.initWidget = function () {
 }
 
 module.exports = SezzleJS;
-// Assumes document.sezzleConfig is present
-window.onload = new SezzleJS(document.sezzleConfig).init();

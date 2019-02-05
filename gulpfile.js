@@ -101,7 +101,7 @@ gulp.task('post-button-css-to-wrapper', function() {
  * Tasks for the sezzle-js widget
  */
 gulp.task('bundlejs', function() {
-  return gulp.src('src/sezzle.js')
+  return gulp.src('src/sezzle-init.js')
     .pipe(webpack({
       output: {
         filename: buttonUploadName,
