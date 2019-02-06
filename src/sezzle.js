@@ -1,3 +1,4 @@
+require('./initial');
 var Helper = require('./helper');
 
 var SezzleJS = function(options) {

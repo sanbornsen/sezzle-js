@@ -8,7 +8,7 @@ exports.isNumeric = function (n) {
 }
 
 /**
- * This is a helper function to break xpath into arrat
+ * This is a helper function to break xpath into array
  * @param xpath string Ex: './.class1/#id'
  * @returns string[] Ex: ['.', '.class', '#id']
  */

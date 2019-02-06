@@ -17,28 +17,6 @@ var buttonUploadName = `sezzle-widget${pjson.version}.js`;
 var globalCssUploadName = 'sezzle-styles-global2.0.2.css';
 
 /**
- * Tasks for the initial script
- */
-gulp.task('upload-initial', function() {
-    var indexPath = './initial-script.js';
-    gulp.src(indexPath)
-        .pipe(s3({
-            Bucket: 'sezzle-shopify-application',
-            ACL: 'public-read',
-            keyTransform: function(relative_filename) {
-              return 'scripts/' + relative_filename;
-            }
-        }, {
-            // S3 Constructor Options, ie:
-            maxRetries: 5
-        }))
-    .pipe(cloudfront({
-        distribution: 'E113O1YE02L91O',
-        paths: ['/scripts/*']
-    }));
-});
-
-/**
  * Tasks for the CSS
  */
 

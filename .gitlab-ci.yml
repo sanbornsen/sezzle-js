@@ -27,4 +27,4 @@ deploy:
   only:
    - master
   script:
-   - npm run deploy-initial
+   - npm run deploy-widget
