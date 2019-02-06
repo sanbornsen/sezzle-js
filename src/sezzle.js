@@ -106,10 +106,11 @@ var SezzleJS = function(options) {
   // xpath -> the path from the root of sezzle element
   // className -> a string of classname that is to be added
   // index -> this is optional, if provided then only the widget with
+  // targetXPathIndex -> It's a map to the element that match the targetPath of that index
   // the same sezzle index value will be effected with the class name
   // Example : [
-  // {xpath:'.', className: 'test-1', index: 0},
-  // {xpath: './.hello', className: 'test-2', index: 0}
+  // {xpath:'.', className: 'test-1', index: 0, targetXPathIndex: 0},
+  // {xpath: './.hello', className: 'test-2', index: 0, targetXPathIndex: 0}
   //]
   this.customClasses = Array.isArray(options.customClasses) ? options.customClasses : [];
 
@@ -417,7 +418,7 @@ SezzleJS.prototype.setWidgetSize = function (element) {
  * @param index - Index of the element in the page
  * @return void
  */
-SezzleJS.prototype.renderAwesomeSezzle = function (element, renderelement, index) {
+SezzleJS.prototype.renderAwesomeSezzle = function (element, renderelement, index, targetXPathIndex) {
   var index = index || 0;
 
   // Do not render this product if it is not eligible
@@ -565,9 +566,12 @@ SezzleJS.prototype.renderAwesomeSezzle = function (element, renderelement, index
   this.customClasses.forEach(function(customClass) {
     if (customClass.xpath && customClass.className) {
       if (typeof(customClass.index) !== 'number') {
-        customClass.index = 0; // set the default value
+        customClass.index = -1; // set the default value
       }
-      if (customClass.index === index) {
+      if (typeof(customClass.targetXPathIndex) !== 'number') {
+        customClass.targetXPathIndex = -1; // set the default value
+      }
+      if (customClass.index === index || customClass.targetXPathIndex === targetXPathIndex) {
         var path = Helper.breakXPath(customClass.xpath);
         this.getElementsByXPath(path, 0, [sezzle])
           .forEach(function(el) {
@@ -1151,7 +1155,8 @@ SezzleJS.prototype.initWidget = function () {
             element: e,
             toRenderElement: this.getElementToRender(e, index),
             deleted: false,
-            observer: null
+            observer: null,
+            targetXPathIndex: index
           });
         }
       }.bind(this))
@@ -1159,7 +1164,10 @@ SezzleJS.prototype.initWidget = function () {
     // add the sezzle widget to the price elements
     els.forEach(function (el, index) {
       if (!el.element.hasAttribute('data-sezzleindex')) {
-        var sz = this.renderAwesomeSezzle(el.element, el.toRenderElement, index);
+        var sz = this.renderAwesomeSezzle(
+          el.element, el.toRenderElement,
+          index, el.targetXPathIndex
+        );
         this.addClickEventForModal(sz);
         el.observer = this.startObserve(el.element);
       }
@@ -1186,7 +1194,7 @@ SezzleJS.prototype.initWidget = function () {
   };
 
   if (this.hasPriceClassElement) {
-    var sz = this.renderAwesomeSezzle(this.priceElements[0], this.renderElements[0], 0);
+    var sz = this.renderAwesomeSezzle(this.priceElements[0], this.renderElements[0], 0, 0);
     this.startObserve(this.priceElements[0]);
   } else {
     sezzleWidgetCheckInterval.call(this);
