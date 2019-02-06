@@ -1,6 +1,7 @@
 {
     "targetXPath": ["#id-1/.class-1", "#id-2/.class-2"],
     "renderToPath": ["..", ".."],
+    "ignoredPriceElements": ["#id-3/.class-3"],
     "merchantID": "49261e2d-72af-4358-bf97-3035ce9f11a1",
     "minPrice": 0,
     "maxPrice": 2000000,
