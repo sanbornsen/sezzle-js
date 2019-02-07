@@ -12,10 +12,13 @@ var gulp = require('gulp'),
   config = { useIAM: true },
   webpack = require('webpack-stream'),
   pjson = require('./package.json'),
-  git = require('gulp-git');
+  git = require('gulp-git'),
+  compareVersions = require('compare-versions'),
+  bump = require('gulp-bump');
 
 var buttonUploadName = `sezzle-widget${pjson.version}.js`;
 var globalCssUploadName = 'sezzle-styles-global2.0.2.css';
+var newVersion = '';
 
 /**
  * Tasks for the CSS
@@ -94,41 +97,6 @@ gulp.task('bundlejs', function () {
     .pipe(gulp.dest('dist/'));
 });
 
-/**
- * The last commit has to be in 'version: x.x.x' format
- * In this commit the package.json version should hold the same number
- */
-gulp.task('version-check', function (done) {
-  var git = require('git-last-commit');
-  git.getLastCommit(function (err, commit) {
-    // read commit object properties
-    var newVersion = "";
-    var subject = commit.subject.trim().split(':');
-    if (subject[0].trim().toLowerCase() === 'version') {
-      newVersion = subject[1].trim().split(' ')[0];
-    } else {
-      throw 'Last commit doesn\'t contain version';
-    }
-    if (!(/^\d{1,2}\.\d{1,2}\.\d{1,2}$/.test(newVersion))) {
-      throw `The new version(${newVersion}) doesn't match the version format`;
-    }
-    if (newVersion !== pjson.version) {
-      throw `The new version(${newVersion}) doesn't match with package version(${pjson.version})`;
-    }
-    done();
-  });
-})
-
-gulp.task('git-tag', function(done) {
-  git.tag(`v${pjson.version}`, '', function (err) {
-    if (err) throw err;
-    git.push('origin', '', {args: " --tags"}, function (err) {
-      if (err) throw err;
-      done();
-    });
-  });
-})
-
 gulp.task('upload-widget', function () {
   var indexPath = `./dist/${buttonUploadName}`
   gulp.src(indexPath)
@@ -161,10 +129,44 @@ gulp.task('post-button-to-widget-server', function () {
 });
 
 gulp.task('styles', gulp.series('cleancss', 'csscompile'));
-gulp.task('deploywidget', gulp.series(
-  'version-check',
-  'git-tag',
-  'upload-widget',
-  'post-button-to-widget-server'
-))
-gulp.task('deploycss', gulp.series('cssupload', 'post-button-css-to-wrapper'))
+gulp.task('deploywidget', gulp.series('upload-widget', 'post-button-to-widget-server'));
+gulp.task('deploycss', gulp.series('cssupload', 'post-button-css-to-wrapper'));
+
+function increaseVersion(oldVersion) {
+  oldVersion.split('.')[2]
+}
+
+gulp.task('grabversion', function(done) {
+  var argv = require('yargs').argv;
+  newVersion = argv.newversion;
+  if(typeof(newVersion) === 'boolean' ||
+    typeof(newVersion) === 'undefined' ||
+    !(/^\d{1,2}\.\d{1,2}\.\d{1,2}$/.test(newVersion)) ||
+    compareVersions(newVersion, pjson.version) < 1
+  ) {
+    throw 'Invalid value for newversion'
+  };
+  done();
+})
+
+gulp.task('updatepackage', function() {
+  return gulp.src(['./package.json', './package-lock.json'])
+    .pipe(bump({version: newVersion}))
+    .pipe(gulp.dest('./'));
+})
+
+gulp.task('commitupdate', function() {
+  return gulp.src('./package.json')
+    .pipe(git.commit(`version: ${newVersion}`));
+})
+
+gulp.task('createtag', function(done) {
+  git.tag(`v${newVersion}`, '', function (err) {
+    if (err) throw err;
+    git.push('sanborn', '', {args: " --tags"}, function (err) {
+      if (err) throw err;
+      done();
+    });
+  });
+})
+gulp.task('updateversion', gulp.series('grabversion', 'updatepackage', 'commitupdate', 'createtag'));
